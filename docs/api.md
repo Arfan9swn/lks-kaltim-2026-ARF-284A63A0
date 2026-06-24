@@ -749,6 +749,220 @@ Accept: application/json
 
 ---
 
+## Endpoints Dashboard (Admin Only)
+
+### 18. Statistik Ringkasan Dashboard
+
+**GET** `/dashboard/stats`
+
+Mengambil statistik ringkasan untuk dashboard admin.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Statistik dashboard berhasil diambil",
+  "data": {
+    "users": {
+      "total": 3,
+      "citizens": 2,
+      "admins": 1,
+      "new_this_month": 3
+    },
+    "reports": {
+      "total": 1,
+      "open": 0,
+      "in_progress": 1,
+      "resolved": 0,
+      "this_month": 1
+    },
+    "service_requests": {
+      "total": 1,
+      "pending": 0,
+      "processing": 0,
+      "done": 1,
+      "rejected": 0,
+      "this_month": 1
+    },
+    "notifications": {
+      "total": 1,
+      "unread": 1
+    }
+  }
+}
+```
+
+**Response Fields:**
+- `users.total` - Total semua user
+- `users.citizens` - Total user citizen
+- `users.admins` - Total user admin
+- `users.new_this_month` - User baru bulan ini
+- `reports.total` - Total semua laporan
+- `reports.open` - Laporan terbuka
+- `reports.in_progress` - Laporan sedang diproses
+- `reports.resolved` - Laporan selesai
+- `reports.this_month` - Laporan bulan ini
+- `service_requests.total` - Total semua permintaan layanan
+- `service_requests.pending` - Permintaan menunggu
+- `service_requests.processing` - Permintaan sedang diproses
+- `service_requests.done` - Permintaan selesai
+- `service_requests.rejected` - Permintaan ditolak
+- `service_requests.this_month` - Permintaan bulan ini
+- `notifications.total` - Total semua notifikasi
+- `notifications.unread` - Notifikasi belum dibaca
+
+**Response (403 Forbidden):**
+```json
+{
+  "success": false,
+  "message": "Akses ditolak. Hanya admin yang dapat mengakses dashboard."
+}
+```
+
+---
+
+### 19. Rekapitulasi Laporan per Kategori
+
+**GET** `/dashboard/reports/summary`
+
+Mengambil rekapitulasi laporan berdasarkan kategori.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Rekapitulasi laporan per kategori berhasil diambil",
+  "data": {
+    "summary": [
+      {
+        "category": "infrastructure",
+        "category_label": "Infrastruktur",
+        "total": 1
+      }
+    ],
+    "detailed": [
+      {
+        "category": "infrastructure",
+        "category_label": "Infrastruktur",
+        "total": 1,
+        "status_breakdown": [
+          {
+            "status": "open",
+            "status_label": "Terbuka",
+            "count": 0
+          },
+          {
+            "status": "in_progress",
+            "status_label": "Sedang Diproses",
+            "count": 1
+          },
+          {
+            "status": "resolved",
+            "status_label": "Selesai",
+            "count": 0
+          }
+        ]
+      },
+      {
+        "category": "environment",
+        "category_label": "Lingkungan",
+        "total": 0,
+        "status_breakdown": [
+          {
+            "status": "open",
+            "status_label": "Terbuka",
+            "count": 0
+          },
+          {
+            "status": "in_progress",
+            "status_label": "Sedang Diproses",
+            "count": 0
+          },
+          {
+            "status": "resolved",
+            "status_label": "Selesai",
+            "count": 0
+          }
+        ]
+      },
+      {
+        "category": "social",
+        "category_label": "Sosial",
+        "total": 0,
+        "status_breakdown": [
+          {
+            "status": "open",
+            "status_label": "Terbuka",
+            "count": 0
+          },
+          {
+            "status": "in_progress",
+            "status_label": "Sedang Diproses",
+            "count": 0
+          },
+          {
+            "status": "resolved",
+            "status_label": "Selesai",
+            "count": 0
+          }
+        ]
+      },
+      {
+        "category": "other",
+        "category_label": "Lainnya",
+        "total": 0,
+        "status_breakdown": [
+          {
+            "status": "open",
+            "status_label": "Terbuka",
+            "count": 0
+          },
+          {
+            "status": "in_progress",
+            "status_label": "Sedang Diproses",
+            "count": 0
+          },
+          {
+            "status": "resolved",
+            "status_label": "Selesai",
+            "count": 0
+          }
+        ]
+      }
+    ],
+    "total_reports": 1
+  }
+}
+```
+
+**Response Fields:**
+- `summary` - Ringkasan total per kategori
+- `detailed` - Detail breakdown per kategori dan status
+- `detailed[].status_breakdown` - Breakdown status untuk setiap kategori
+- `total_reports` - Total semua laporan
+
+**Response (403 Forbidden):**
+```json
+{
+  "success": false,
+  "message": "Akses ditolak. Hanya admin yang dapat mengakses dashboard."
+}
+```
+
+---
+
 ## Model Data
 
 ### User
@@ -856,7 +1070,7 @@ Semua endpoint mengembalikan format error yang konsisten:
 ```json
 {
   "success": false,
-  "message": "Akses ditolak. Hanya admin yang dapat mengubah status."
+  "message": "Akses ditolak. Hanya admin yang dapat mengakses dashboard."
 }
 ```
 
@@ -971,6 +1185,22 @@ Sistem akan otomatis mengirim notifikasi ketika:
    - Accept: application/json
    - Authorization: Bearer {token_dari_login}
 
+### Contoh: Lihat Statistik Dashboard (Admin)
+
+1. **Method:** GET
+2. **URL:** `http://localhost:8000/api/v1/dashboard/stats`
+3. **Headers:**
+   - Accept: application/json
+   - Authorization: Bearer {admin_token}
+
+### Contoh: Lihat Rekapitulasi Laporan per Kategori (Admin)
+
+1. **Method:** GET
+2. **URL:** `http://localhost:8000/api/v1/dashboard/reports/summary`
+3. **Headers:**
+   - Accept: application/json
+   - Authorization: Bearer {admin_token}
+
 ### Contoh: Tandai Notifikasi sebagai Dibaca
 
 1. **Method:** PUT
@@ -1014,3 +1244,5 @@ Sistem akan otomatis mengirim notifikasi ketika:
 - Notifikasi otomatis dikirim ketika status permintaan layanan berubah
 - User dapat melihat daftar notifikasi dan menandai sebagai dibaca
 - Notifikasi menyimpan referensi ke data terkait (service_request atau report)
+- Dashboard hanya dapat diakses oleh admin
+- Dashboard menyediakan statistik lengkap: users, reports, service requests, dan notifications

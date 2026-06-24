@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\DashboardController;
 
 Route::prefix('v1')->group(function () {
     // Auth endpoints
@@ -31,4 +32,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->middleware('auth:api');
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->middleware('auth:api');
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->middleware('auth:api');
-});
+
+    // Dashboard endpoints (hanya admin)
+    Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->middleware('auth:api');
+    Route::get('/dashboard/reports/summary', [DashboardController::class, 'getReportsSummary'])->middleware('auth:api');
+})
