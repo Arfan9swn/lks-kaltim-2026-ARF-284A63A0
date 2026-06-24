@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Middleware\AdminMiddleware;
 
 Route::prefix('v1')->group(function () {
     // Auth endpoints
@@ -19,8 +20,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/services', [ServiceController::class, 'indexServiceTypes']);
     Route::post('/services/request', [ServiceController::class, 'storeServiceRequest'])->middleware('auth:api');
     Route::get('/services/request/{id}', [ServiceController::class, 'showServiceRequest'])->middleware('auth:api');
-    Route::put('/services/request/{id}/status', [ServiceController::class, 'updateServiceRequestStatus'])->middleware('auth:api');
-    Route::get('/services/requests', [ServiceController::class, 'indexAllServiceRequests'])->middleware('auth:api');
+    Route::put('/services/request/{id}/status', [ServiceController::class, 'updateServiceRequestStatus'])->middleware(['auth:api', AdminMiddleware::class]);
+    Route::get('/services/requests', [ServiceController::class, 'indexAllServiceRequests'])->middleware(['auth:api', AdminMiddleware::class]);
 
     // Report endpoints
     Route::post('/reports', [ReportController::class, 'store'])->middleware('auth:api');
@@ -34,6 +35,6 @@ Route::prefix('v1')->group(function () {
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->middleware('auth:api');
 
     // Dashboard endpoints (hanya admin)
-    Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->middleware('auth:api');
-    Route::get('/dashboard/reports/summary', [DashboardController::class, 'getReportsSummary'])->middleware('auth:api');
-})
+    Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->middleware(['auth:api', AdminMiddleware::class]);
+    Route::get('/dashboard/reports/summary', [DashboardController::class, 'getReportsSummary'])->middleware(['auth:api', AdminMiddleware::class]);
+});
