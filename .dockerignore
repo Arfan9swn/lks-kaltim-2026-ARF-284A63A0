@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# PHP
+vendor
+composer.lock
+
+# Storage
+storage/app/*
+storage/framework/*
+storage/logs/*
+!storage/app/public
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Tests
+tests
+phpunit.xml
+
+# Documentation
+docs
+README.md
+
+# Build artifacts
+public/build
+public/hot
+public/storage
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.temp
