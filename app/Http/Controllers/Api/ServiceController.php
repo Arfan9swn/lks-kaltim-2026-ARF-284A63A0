@@ -177,12 +177,21 @@ class ServiceController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        $serviceRequests = $query->orderBy('created_at', 'desc')->get();
+        $perPage = $request->get('per_page', 10);
+        $serviceRequests = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar semua permintaan layanan',
-            'data' => $serviceRequests
+            'data' => $serviceRequests->items(),
+            'pagination' => [
+                'total' => $serviceRequests->total(),
+                'per_page' => $serviceRequests->perPage(),
+                'current_page' => $serviceRequests->currentPage(),
+                'last_page' => $serviceRequests->lastPage(),
+                'from' => $serviceRequests->firstItem(),
+                'to' => $serviceRequests->lastItem()
+            ]
         ], 200);
     }
 }

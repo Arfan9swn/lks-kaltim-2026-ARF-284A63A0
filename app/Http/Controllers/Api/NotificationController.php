@@ -29,7 +29,8 @@ class NotificationController extends Controller
             $query->where('type', $request->type);
         }
 
-        $notifications = $query->orderBy('created_at', 'desc')->get();
+        $perPage = $request->get('per_page', 10);
+        $notifications = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         // Count unread notifications
         $unreadCount = Notification::where('user_id', $user->id)
@@ -40,7 +41,15 @@ class NotificationController extends Controller
             'success' => true,
             'message' => 'Daftar notifikasi berhasil diambil',
             'unread_count' => $unreadCount,
-            'data' => $notifications
+            'data' => $notifications->items(),
+            'pagination' => [
+                'total' => $notifications->total(),
+                'per_page' => $notifications->perPage(),
+                'current_page' => $notifications->currentPage(),
+                'last_page' => $notifications->lastPage(),
+                'from' => $notifications->firstItem(),
+                'to' => $notifications->lastItem()
+            ]
         ], 200);
     }
 

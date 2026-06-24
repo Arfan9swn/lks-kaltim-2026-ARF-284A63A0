@@ -74,12 +74,21 @@ class ReportController extends Controller
             $query->where('status', $request->status);
         }
 
-        $reports = $query->orderBy('created_at', 'desc')->get();
+        $perPage = $request->get('per_page', 10);
+        $reports = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar laporan berhasil diambil',
-            'data' => $reports
+            'data' => $reports->items(),
+            'pagination' => [
+                'total' => $reports->total(),
+                'per_page' => $reports->perPage(),
+                'current_page' => $reports->currentPage(),
+                'last_page' => $reports->lastPage(),
+                'from' => $reports->firstItem(),
+                'to' => $reports->lastItem()
+            ]
         ], 200);
     }
 

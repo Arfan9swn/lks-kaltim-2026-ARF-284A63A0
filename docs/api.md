@@ -385,6 +385,8 @@ Accept: application/json
 **Query Parameters (opsional):**
 - `status` - Filter by status (pending/processing/done/rejected)
 - `user_id` - Filter by user ID
+- `per_page` - Jumlah data per halaman (default: 10)
+- `page` - Nomor halaman (default: 1)
 
 **Response (200 OK):**
 ```json
@@ -414,7 +416,15 @@ Accept: application/json
         "role": "citizen"
       }
     }
-  ]
+  ],
+  "pagination": {
+    "total": 25,
+    "per_page": 10,
+    "current_page": 1,
+    "last_page": 3,
+    "from": 1,
+    "to": 10
+  }
 }
 ```
 
@@ -497,6 +507,8 @@ Accept: application/json
 **Query Parameters (opsional):**
 - `category` - Filter by category (infrastructure/environment/social/other)
 - `status` - Filter by status (open/in_progress/resolved)
+- `per_page` - Jumlah data per halaman (default: 10)
+- `page` - Nomor halaman (default: 1)
 
 **Response (200 OK):**
 ```json
@@ -522,7 +534,15 @@ Accept: application/json
         "role": "citizen"
       }
     }
-  ]
+  ],
+  "pagination": {
+    "total": 25,
+    "per_page": 10,
+    "current_page": 1,
+    "last_page": 3,
+    "from": 1,
+    "to": 10
+  }
 }
 ```
 
@@ -654,6 +674,8 @@ Accept: application/json
 **Query Parameters (opsional):**
 - `is_read` - Filter by read status (true/false)
 - `type` - Filter by type (service_request/report/system)
+- `per_page` - Jumlah data per halaman (default: 10)
+- `page` - Nomor halaman (default: 1)
 
 **Response (200 OK):**
 ```json
@@ -673,7 +695,15 @@ Accept: application/json
       "created_at": "2026-06-24T06:22:07.000000Z",
       "updated_at": "2026-06-24T06:22:07.000000Z"
     }
-  ]
+  ],
+  "pagination": {
+    "total": 15,
+    "per_page": 10,
+    "current_page": 1,
+    "last_page": 2,
+    "from": 1,
+    "to": 10
+  }
 }
 ```
 
@@ -683,6 +713,7 @@ Accept: application/json
 - `is_read` - Status pembacaan (true/false)
 - `reference_id` - ID dari data yang direferensikan
 - `reference_type` - Tipe data yang direferensikan (service_request, report)
+- `pagination` - Informasi pagination
 
 ---
 
@@ -963,6 +994,46 @@ Accept: application/json
 
 ---
 
+## Pagination
+
+Semua endpoint list mendukung pagination dengan parameter:
+
+**Query Parameters:**
+- `per_page` - Jumlah data per halaman (default: 10, maksimal: 100)
+- `page` - Nomor halaman yang ingin ditampilkan (default: 1)
+
+**Response Format:**
+```json
+{
+  "success": true,
+  "message": "Daftar data berhasil diambil",
+  "data": [...],
+  "pagination": {
+    "total": 100,
+    "per_page": 10,
+    "current_page": 1,
+    "last_page": 10,
+    "from": 1,
+    "to": 10
+  }
+}
+```
+
+**Pagination Fields:**
+- `total` - Total semua data
+- `per_page` - Jumlah data per halaman
+- `current_page` - Halaman saat ini
+- `last_page` - Halaman terakhir
+- `from` - Nomor data pertama di halaman ini
+- `to` - Nomor data terakhir di halaman ini
+
+**Contoh Penggunaan:**
+- `GET /api/v1/reports?per_page=20&page=2` - Menampilkan 20 data per halaman, halaman ke-2
+- `GET /api/v1/notifications?per_page=5` - Menampilkan 5 data per halaman
+- `GET /api/v1/services/requests?page=3` - Menampilkan halaman ke-3 (10 data per halaman)
+
+---
+
 ## Model Data
 
 ### User
@@ -1169,18 +1240,18 @@ Sistem akan otomatis mengirim notifikasi ketika:
 }
 ```
 
-### Contoh: Lihat Daftar Laporan
+### Contoh: Lihat Daftar Laporan dengan Pagination
 
 1. **Method:** GET
-2. **URL:** `http://localhost:8000/api/v1/reports`
+2. **URL:** `http://localhost:8000/api/v1/reports?per_page=5&page=2`
 3. **Headers:**
    - Accept: application/json
    - Authorization: Bearer {token_dari_login}
 
-### Contoh: Lihat Notifikasi
+### Contoh: Lihat Notifikasi dengan Pagination
 
 1. **Method:** GET
-2. **URL:** `http://localhost:8000/api/v1/notifications`
+2. **URL:** `http://localhost:8000/api/v1/notifications?per_page=10&is_read=false`
 3. **Headers:**
    - Accept: application/json
    - Authorization: Bearer {token_dari_login}
@@ -1246,3 +1317,6 @@ Sistem akan otomatis mengirim notifikasi ketika:
 - Notifikasi menyimpan referensi ke data terkait (service_request atau report)
 - Dashboard hanya dapat diakses oleh admin
 - Dashboard menyediakan statistik lengkap: users, reports, service requests, dan notifications
+- Pagination default: 10 item per halaman
+- Pagination dapat diatur dengan parameter `per_page` (maksimal 100)
+- Navigasi halaman dengan parameter `page`
