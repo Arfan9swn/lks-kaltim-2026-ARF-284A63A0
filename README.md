@@ -3,7 +3,7 @@
 ## Informasi Peserta
 
 - **Nama:** Arfan
-- **Kode Peserta:** 284A63A0
+- **Kode Peserta:** ARF-284A63A0
 
 ## Deskripsi Proyek
 
@@ -339,11 +339,3 @@ Untuk deployment ke production:
 8. Gunakan managed services (AWS RDS, ElastiCache, dll.)
 9. Implementasi CI/CD pipeline
 10. Setup health checks dan auto-scaling
-
-## Kontribusi
-
-Silakan buat issue atau pull request untuk kontribusi.
-
-## License
-
-MIT
