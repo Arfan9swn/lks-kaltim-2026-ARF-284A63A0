@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\NotificationController;
 
 Route::prefix('v1')->group(function () {
     // Auth endpoints
@@ -25,4 +26,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->middleware('auth:api');
     Route::get('/reports/{id}', [ReportController::class, 'show'])->middleware('auth:api');
     Route::put('/reports/{id}', [ReportController::class, 'update'])->middleware('auth:api');
+
+    // Notification endpoints
+    Route::get('/notifications', [NotificationController::class, 'index'])->middleware('auth:api');
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->middleware('auth:api');
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->middleware('auth:api');
 });

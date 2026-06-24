@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceRequest;
 use App\Models\ServiceType;
+use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -115,6 +116,22 @@ class ServiceController extends Controller
 
             $serviceRequest->update([
                 'status' => $validated['status']
+            ]);
+
+            // Create notification for the user
+            $statusLabels = [
+                'pending' => 'Menunggu',
+                'processing' => 'Sedang Diproses',
+                'done' => 'Selesai',
+                'rejected' => 'Ditolak'
+            ];
+
+            Notification::create([
+                'user_id' => $serviceRequest->user_id,
+                'message' => "Permintaan layanan {$serviceRequest->serviceType->name} telah diperbarui menjadi status: {$statusLabels[$validated['status']]}",
+                'type' => 'service_request',
+                'reference_id' => $serviceRequest->id,
+                'reference_type' => 'service_request'
             ]);
 
             $serviceRequest->load(['serviceType', 'user']);

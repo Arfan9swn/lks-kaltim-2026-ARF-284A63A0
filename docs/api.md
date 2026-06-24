@@ -366,6 +366,8 @@ Accept: application/json
 }
 ```
 
+**Catatan:** Sistem akan otomatis mengirim notifikasi ke user ketika status permintaan layanan berubah.
+
 ---
 
 ### 10. Daftar Semua Permintaan Layanan (Admin Only)
@@ -635,6 +637,118 @@ Accept: application/json
 
 ---
 
+## Endpoints Notifikasi
+
+### 15. Daftar Notifikasi
+
+**GET** `/notifications`
+
+Mengambil daftar notifikasi pengguna yang terautentikasi.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Query Parameters (opsional):**
+- `is_read` - Filter by read status (true/false)
+- `type` - Filter by type (service_request/report/system)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Daftar notifikasi berhasil diambil",
+  "unread_count": 1,
+  "data": [
+    {
+      "id": 1,
+      "user_id": 4,
+      "message": "Permintaan layanan Surat Keterangan Domisili telah diperbarui menjadi status: Selesai",
+      "type": "service_request",
+      "is_read": false,
+      "reference_id": 1,
+      "reference_type": "service_request",
+      "created_at": "2026-06-24T06:22:07.000000Z",
+      "updated_at": "2026-06-24T06:22:07.000000Z"
+    }
+  ]
+}
+```
+
+**Response Fields:**
+- `unread_count` - Jumlah notifikasi yang belum dibaca
+- `type` - Jenis notifikasi (service_request, report, system)
+- `is_read` - Status pembacaan (true/false)
+- `reference_id` - ID dari data yang direferensikan
+- `reference_type` - Tipe data yang direferensikan (service_request, report)
+
+---
+
+### 16. Tandai Notifikasi sebagai Dibaca
+
+**PUT** `/notifications/{id}/read`
+
+Menandai notifikasi tertentu sebagai sudah dibaca.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Notifikasi berhasil ditandai sebagai dibaca",
+  "data": {
+    "id": 1,
+    "user_id": 4,
+    "message": "Permintaan layanan Surat Keterangan Domisili telah diperbarui menjadi status: Selesai",
+    "type": "service_request",
+    "is_read": true,
+    "reference_id": 1,
+    "reference_type": "service_request",
+    "created_at": "2026-06-24T06:22:07.000000Z",
+    "updated_at": "2026-06-24T06:22:07.000000Z"
+  }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "success": false,
+  "message": "Notifikasi tidak ditemukan"
+}
+```
+
+---
+
+### 17. Tandai Semua Notifikasi sebagai Dibaca
+
+**PUT** `/notifications/read-all`
+
+Menandai semua notifikasi user sebagai sudah dibaca.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Semua notifikasi berhasil ditandai sebagai dibaca"
+}
+```
+
+---
+
 ## Model Data
 
 ### User
@@ -691,6 +805,20 @@ Accept: application/json
 | created_at | timestamp | Timestamp pembuatan |
 | updated_at | timestamp | Timestamp update terakhir |
 
+### Notification
+
+| Field | Tipe | Deskripsi |
+|-------|------|-----------|
+| id | integer | Identifikasi unik |
+| user_id | integer | ID user yang menerima notifikasi |
+| message | text | Isi pesan notifikasi |
+| type | string | Tipe notifikasi (service_request, report, system) |
+| is_read | boolean | Status pembacaan (false = belum dibaca, true = sudah dibaca) |
+| reference_id | integer | ID dari data yang direferensikan |
+| reference_type | string | Tipe data yang direferensikan (service_request, report) |
+| created_at | timestamp | Timestamp pembuatan |
+| updated_at | timestamp | Timestamp update terakhir |
+
 ---
 
 ## Format Error Response
@@ -731,6 +859,19 @@ Semua endpoint mengembalikan format error yang konsisten:
   "message": "Akses ditolak. Hanya admin yang dapat mengubah status."
 }
 ```
+
+---
+
+## Sistem Notifikasi Otomatis
+
+Sistem akan otomatis mengirim notifikasi ketika:
+
+1. **Status Permintaan Layanan Berubah** - Notifikasi dikirim ke user yang membuat permintaan layanan ketika admin mengubah status (pending → processing → done/rejected)
+
+2. **Format Notifikasi:**
+   - Message: "Permintaan layanan [Nama Layanan] telah diperbarui menjadi status: [Status]"
+   - Type: `service_request`
+   - Reference: ID dan tipe permintaan layanan
 
 ---
 
@@ -822,6 +963,22 @@ Semua endpoint mengembalikan format error yang konsisten:
    - Accept: application/json
    - Authorization: Bearer {token_dari_login}
 
+### Contoh: Lihat Notifikasi
+
+1. **Method:** GET
+2. **URL:** `http://localhost:8000/api/v1/notifications`
+3. **Headers:**
+   - Accept: application/json
+   - Authorization: Bearer {token_dari_login}
+
+### Contoh: Tandai Notifikasi sebagai Dibaca
+
+1. **Method:** PUT
+2. **URL:** `http://localhost:8000/api/v1/notifications/1/read`
+3. **Headers:**
+   - Accept: application/json
+   - Authorization: Bearer {token_dari_login}
+
 ### Contoh: Update Status Laporan (Admin)
 
 1. **Method:** PUT
@@ -854,3 +1011,6 @@ Semua endpoint mengembalikan format error yang konsisten:
 - Admin dapat melihat dan mengupdate semua laporan
 - Kategori laporan: infrastructure (infrastruktur), environment (lingkungan), social (sosial), other (lainnya)
 - Status laporan: open (terbuka), in_progress (sedang diproses), resolved (selesai)
+- Notifikasi otomatis dikirim ketika status permintaan layanan berubah
+- User dapat melihat daftar notifikasi dan menandai sebagai dibaca
+- Notifikasi menyimpan referensi ke data terkait (service_request atau report)
