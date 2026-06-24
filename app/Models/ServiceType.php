@@ -7,9 +7,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ServiceType extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'name',
         'description',

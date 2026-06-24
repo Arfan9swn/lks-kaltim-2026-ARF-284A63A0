@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ServiceController;
+use App\Http\Controllers\Api\ReportController;
 
 Route::prefix('v1')->group(function () {
     // Auth endpoints
@@ -18,4 +19,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/services/request/{id}', [ServiceController::class, 'showServiceRequest'])->middleware('auth:api');
     Route::put('/services/request/{id}/status', [ServiceController::class, 'updateServiceRequestStatus'])->middleware('auth:api');
     Route::get('/services/requests', [ServiceController::class, 'indexAllServiceRequests'])->middleware('auth:api');
+
+    // Report endpoints
+    Route::post('/reports', [ReportController::class, 'store'])->middleware('auth:api');
+    Route::get('/reports', [ReportController::class, 'index'])->middleware('auth:api');
+    Route::get('/reports/{id}', [ReportController::class, 'show'])->middleware('auth:api');
+    Route::put('/reports/{id}', [ReportController::class, 'update'])->middleware('auth:api');
 });

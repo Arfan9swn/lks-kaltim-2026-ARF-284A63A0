@@ -426,6 +426,215 @@ Accept: application/json
 
 ---
 
+## Endpoints Laporan Warga
+
+### 11. Kirim Laporan Masalah
+
+**POST** `/reports`
+
+Mengirim laporan masalah di lingkungan (butuh autentikasi).
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+**Request Body:**
+```json
+{
+  "category": "string (wajib, infrastructure|environment|social|other)",
+  "title": "string (wajib, max:255)",
+  "description": "string (wajib, max:2000)",
+  "location": "string (wajib, max:500)",
+  "image_url": "string (opsional, URL gambar, max:500)"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Laporan berhasil dikirim",
+  "data": {
+    "id": 1,
+    "user_id": 4,
+    "category": "infrastructure",
+    "title": "Jalan Rusak di RT 05",
+    "description": "Jalan di depan rumah warga rusak parah dan perlu perbaikan segera",
+    "location": "Jl. Merdeka No. 15, RT 05/RW 03",
+    "image_url": "https://example.com/road-damage.jpg",
+    "status": "open",
+    "created_at": "2026-06-24T06:08:41.000000Z",
+    "updated_at": "2026-06-24T06:08:41.000000Z",
+    "user": {
+      "id": 4,
+      "name": "Test User",
+      "email": "test@example.com",
+      "role": "citizen"
+    }
+  }
+}
+```
+
+---
+
+### 12. Daftar Laporan
+
+**GET** `/reports`
+
+Mengambil daftar laporan (admin lihat semua, user hanya miliknya).
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Query Parameters (opsional):**
+- `category` - Filter by category (infrastructure/environment/social/other)
+- `status` - Filter by status (open/in_progress/resolved)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Daftar laporan berhasil diambil",
+  "data": [
+    {
+      "id": 1,
+      "user_id": 4,
+      "category": "infrastructure",
+      "title": "Jalan Rusak di RT 05",
+      "description": "Jalan di depan rumah warga rusak parah dan perlu perbaikan segera",
+      "location": "Jl. Merdeka No. 15, RT 05/RW 03",
+      "image_url": "https://example.com/road-damage.jpg",
+      "status": "open",
+      "created_at": "2026-06-24T06:08:41.000000Z",
+      "updated_at": "2026-06-24T06:08:41.000000Z",
+      "user": {
+        "id": 4,
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "citizen"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### 13. Detail Laporan
+
+**GET** `/reports/{id}`
+
+Melihat detail laporan (user hanya bisa melihat laporan miliknya, admin bisa melihat semua).
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Detail laporan",
+  "data": {
+    "id": 1,
+    "user_id": 4,
+    "category": "infrastructure",
+    "title": "Jalan Rusak di RT 05",
+    "description": "Jalan di depan rumah warga rusak parah dan perlu perbaikan segera",
+    "location": "Jl. Merdeka No. 15, RT 05/RW 03",
+    "image_url": "https://example.com/road-damage.jpg",
+    "status": "open",
+    "created_at": "2026-06-24T06:08:41.000000Z",
+    "updated_at": "2026-06-24T06:08:41.000000Z",
+    "user": {
+      "id": 4,
+      "name": "Test User",
+      "email": "test@example.com",
+      "role": "citizen"
+    }
+  }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "success": false,
+  "message": "Laporan tidak ditemukan"
+}
+```
+
+---
+
+### 14. Update Laporan
+
+**PUT** `/reports/{id}`
+
+Mengupdate laporan (user hanya bisa update laporan miliknya, admin bisa update semua).
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+**Request Body (semua field opsional):**
+```json
+{
+  "category": "string (opsional, infrastructure|environment|social|other)",
+  "title": "string (opsional, max:255)",
+  "description": "string (opsional, max:2000)",
+  "location": "string (opsional, max:500)",
+  "image_url": "string (opsional, URL gambar, max:500)",
+  "status": "string (opsional, open|in_progress|resolved)"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Laporan berhasil diperbarui",
+  "data": {
+    "id": 1,
+    "user_id": 4,
+    "category": "infrastructure",
+    "title": "Jalan Rusak di RT 05",
+    "description": "Jalan di depan rumah warga rusak parah dan perlu perbaikan segera - sedang dalam proses perbaikan",
+    "location": "Jl. Merdeka No. 15, RT 05/RW 03",
+    "image_url": "https://example.com/road-damage.jpg",
+    "status": "in_progress",
+    "created_at": "2026-06-24T06:08:41.000000Z",
+    "updated_at": "2026-06-24T06:09:21.000000Z",
+    "user": {
+      "id": 4,
+      "name": "Test User",
+      "email": "test@example.com",
+      "role": "citizen"
+    }
+  }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "success": false,
+  "message": "Laporan tidak ditemukan"
+}
+```
+
+---
+
 ## Model Data
 
 ### User
@@ -467,6 +676,21 @@ Accept: application/json
 | created_at | timestamp | Timestamp pembuatan |
 | updated_at | timestamp | Timestamp update terakhir |
 
+### Report
+
+| Field | Tipe | Deskripsi |
+|-------|------|-----------|
+| id | integer | Identifikasi unik |
+| user_id | integer | ID user yang membuat laporan |
+| category | enum | Kategori: `infrastructure`, `environment`, `social`, `other` |
+| title | string | Judul laporan (max: 255) |
+| description | text | Deskripsi laporan (max: 2000) |
+| location | string | Lokasi masalah (max: 500) |
+| image_url | string | URL gambar (opsional, max: 500) |
+| status | enum | Status: `open`, `in_progress`, `resolved` (default: open) |
+| created_at | timestamp | Timestamp pembuatan |
+| updated_at | timestamp | Timestamp update terakhir |
+
 ---
 
 ## Format Error Response
@@ -488,7 +712,7 @@ Semua endpoint mengembalikan format error yang konsisten:
 ```json
 {
   "success": false,
-  "message": "Permintaan layanan tidak ditemukan"
+  "message": "Laporan tidak ditemukan"
 }
 ```
 
@@ -571,10 +795,37 @@ Semua endpoint mengembalikan format error yang konsisten:
 }
 ```
 
-### Contoh: Update Status Permintaan (Admin)
+### Contoh: Kirim Laporan Masalah
+
+1. **Method:** POST
+2. **URL:** `http://localhost:8000/api/v1/reports`
+3. **Headers:**
+   - Content-Type: application/json
+   - Accept: application/json
+   - Authorization: Bearer {token_dari_login}
+4. **Body (raw JSON):**
+```json
+{
+  "category": "infrastructure",
+  "title": "Jalan Rusak di RT 05",
+  "description": "Jalan di depan rumah warga rusak parah dan perlu perbaikan segera",
+  "location": "Jl. Merdeka No. 15, RT 05/RW 03",
+  "image_url": "https://example.com/road-damage.jpg"
+}
+```
+
+### Contoh: Lihat Daftar Laporan
+
+1. **Method:** GET
+2. **URL:** `http://localhost:8000/api/v1/reports`
+3. **Headers:**
+   - Accept: application/json
+   - Authorization: Bearer {token_dari_login}
+
+### Contoh: Update Status Laporan (Admin)
 
 1. **Method:** PUT
-2. **URL:** `http://localhost:8000/api/v1/services/request/1/status`
+2. **URL:** `http://localhost:8000/api/v1/reports/1`
 3. **Headers:**
    - Content-Type: application/json
    - Accept: application/json
@@ -582,7 +833,8 @@ Semua endpoint mengembalikan format error yang konsisten:
 4. **Body (raw JSON):**
 ```json
 {
-  "status": "processing"
+  "status": "in_progress",
+  "description": "Jalan di depan rumah warga rusak parah dan perlu perbaikan segera - sedang dalam proses perbaikan"
 }
 ```
 
@@ -598,3 +850,7 @@ Semua endpoint mengembalikan format error yang konsisten:
 - Hanya admin yang dapat mengubah status permintaan layanan
 - User hanya dapat melihat permintaan layanan miliknya sendiri
 - Admin dapat melihat semua permintaan layanan dengan filter
+- Untuk laporan: user hanya bisa melihat dan mengupdate laporan miliknya sendiri
+- Admin dapat melihat dan mengupdate semua laporan
+- Kategori laporan: infrastructure (infrastruktur), environment (lingkungan), social (sosial), other (lainnya)
+- Status laporan: open (terbuka), in_progress (sedang diproses), resolved (selesai)

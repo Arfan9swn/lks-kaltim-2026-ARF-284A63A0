@@ -7,9 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServiceRequest extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'user_id',
         'service_type_id',
@@ -26,9 +23,6 @@ class ServiceRequest extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the service type that owns the service request.
-     */
     public function serviceType(): BelongsTo
     {
         return $this->belongsTo(ServiceType::class);
