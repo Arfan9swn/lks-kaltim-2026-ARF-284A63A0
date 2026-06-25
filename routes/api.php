@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\DynamoReportController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Middleware\AdminMiddleware;
@@ -23,11 +24,18 @@ Route::prefix('v1')->group(function () {
     Route::put('/services/request/{id}/status', [ServiceController::class, 'updateServiceRequestStatus'])->middleware(['auth:api', AdminMiddleware::class]);
     Route::get('/services/requests', [ServiceController::class, 'indexAllServiceRequests'])->middleware(['auth:api', AdminMiddleware::class]);
 
-    // Report endpoints
+    // Report endpoints (MySQL)
     Route::post('/reports', [ReportController::class, 'store'])->middleware('auth:api');
     Route::get('/reports', [ReportController::class, 'index'])->middleware('auth:api');
     Route::get('/reports/{id}', [ReportController::class, 'show'])->middleware('auth:api');
     Route::put('/reports/{id}', [ReportController::class, 'update'])->middleware('auth:api');
+
+    // DynamoDB Report endpoints
+    Route::post('/dynamo-reports', [DynamoReportController::class, 'store'])->middleware('auth:api');
+    Route::get('/dynamo-reports', [DynamoReportController::class, 'index'])->middleware('auth:api');
+    Route::get('/dynamo-reports/{id}', [DynamoReportController::class, 'show'])->middleware('auth:api');
+    Route::put('/dynamo-reports/{id}', [DynamoReportController::class, 'update'])->middleware('auth:api');
+    Route::delete('/dynamo-reports/{id}', [DynamoReportController::class, 'destroy'])->middleware('auth:api');
 
     // Notification endpoints
     Route::get('/notifications', [NotificationController::class, 'index'])->middleware('auth:api');
