@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\DynamoReportController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\TestS3Controller;
 use App\Http\Middleware\AdminMiddleware;
 
 Route::prefix('v1')->group(function () {
@@ -45,4 +47,12 @@ Route::prefix('v1')->group(function () {
     // Dashboard endpoints (hanya admin)
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->middleware(['auth:api', AdminMiddleware::class]);
     Route::get('/dashboard/reports/summary', [DashboardController::class, 'getReportsSummary'])->middleware(['auth:api', AdminMiddleware::class]);
+
+    // Upload endpoints
+    Route::post('/upload/image', [UploadController::class, 'uploadImage'])->middleware('auth:api');
+    Route::post('/upload/images', [UploadController::class, 'uploadMultipleImages'])->middleware('auth:api');
+    Route::delete('/upload/image', [UploadController::class, 'deleteImage'])->middleware('auth:api');
+
+    // Test S3 connection (admin only)
+    Route::get('/test/s3', [TestS3Controller::class, 'testConnection'])->middleware(['auth:api', AdminMiddleware::class]);
 });

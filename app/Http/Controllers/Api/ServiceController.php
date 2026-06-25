@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ServiceRequest;
 use App\Models\ServiceType;
 use App\Models\Notification;
+use App\Services\S3Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +14,14 @@ use Illuminate\Validation\ValidationException;
 
 class ServiceController extends Controller
 {
-    /**
-     * Display a listing of all service types.
-     */
+    protected S3Service $s3Service;
+
+    public function __construct(S3Service $s3Service)
+    {
+        $this->s3Service = $s3Service;
+    }
+
+    /*display a listing of all service types.*/
     public function indexServiceTypes(): JsonResponse
     {
         $serviceTypes = ServiceType::all();
@@ -27,23 +33,27 @@ class ServiceController extends Controller
         ], 200);
     }
 
-    /**
-     * Store a new service request.
-     */
     public function storeServiceRequest(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
                 'service_type_id' => 'required|exists:service_types,id',
                 'description' => 'required|string|max:2000',
-                'attachment_url' => 'nullable|url|max:500'
+                'attachment_url' => 'nullable|url|max:500',
+                'attachment' => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:10240' // 10MB max
             ]);
+
+            $attachmentUrl = $validated['attachment_url'] ?? null;
+
+            if ($request->hasFile('attachment')) {
+                $attachmentUrl = $this->s3Service->upload($request->file('attachment'), 'attachments');
+            }
 
             $serviceRequest = ServiceRequest::create([
                 'user_id' => Auth::id(),
                 'service_type_id' => $validated['service_type_id'],
                 'description' => $validated['description'],
-                'attachment_url' => $validated['attachment_url'] ?? null,
+                'attachment_url' => $attachmentUrl,
             ]);
 
             $serviceRequest->load(['serviceType', 'user']);
@@ -63,9 +73,6 @@ class ServiceController extends Controller
         }
     }
 
-    /**
-     * Display the specified service request.
-     */
     public function showServiceRequest(string $id): JsonResponse
     {
         $serviceRequest = ServiceRequest::with(['serviceType', 'user'])
@@ -86,9 +93,6 @@ class ServiceController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the status of a service request (admin only).
-     */
     public function updateServiceRequestStatus(Request $request, string $id): JsonResponse
     {
         $user = Auth::user();
@@ -118,7 +122,8 @@ class ServiceController extends Controller
                 'status' => $validated['status']
             ]);
 
-            // Create notification for the user
+
+            //supposedly notifis
             $statusLabels = [
                 'pending' => 'Menunggu',
                 'processing' => 'Sedang Diproses',
@@ -151,9 +156,6 @@ class ServiceController extends Controller
         }
     }
 
-    /**
-     * Display all service requests (admin only).
-     */
     public function indexAllServiceRequests(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -167,12 +169,10 @@ class ServiceController extends Controller
 
         $query = ServiceRequest::with(['serviceType', 'user']);
 
-        // Filter by status if provided
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by user_id if provided
         if ($request->has('user_id')) {
             $query->where('user_id', $request->user_id);
         }

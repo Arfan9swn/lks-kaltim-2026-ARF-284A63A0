@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DynamoReport;
+use App\Services\S3Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,13 @@ use Illuminate\Validation\ValidationException;
 
 class DynamoReportController extends Controller
 {
+    protected S3Service $s3Service;
+
+    public function __construct(S3Service $s3Service)
+    {
+        $this->s3Service = $s3Service;
+    }
+
     /**
      * Store a new report in DynamoDB.
      */
@@ -24,9 +32,17 @@ class DynamoReportController extends Controller
                 'description' => 'required|string|max:2000',
                 'location' => 'required|string|max:500',
                 'image_url' => 'nullable|url|max:500',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'status' => 'required|array|min:1',
                 'status.*' => 'in:open,in_progress,resolved'
             ]);
+
+            $imageUrl = $validated['image_url'] ?? '';
+
+            // If image file is uploaded, upload to S3
+            if ($request->hasFile('image')) {
+                $imageUrl = $this->s3Service->upload($request->file('image'), 'reports') ?? '';
+            }
 
             $dynamoReport = new DynamoReport();
             
@@ -37,7 +53,7 @@ class DynamoReportController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'location' => $validated['location'],
-                'image_url' => $validated['image_url'] ?? '',
+                'image_url' => $imageUrl,
                 'status' => $validated['status'],
             ]);
 
@@ -171,11 +187,24 @@ class DynamoReportController extends Controller
                 'description' => 'sometimes|string|max:2000',
                 'location' => 'sometimes|string|max:500',
                 'image_url' => 'nullable|url|max:500',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'status' => 'sometimes|array|min:1',
                 'status.*' => 'in:open,in_progress,resolved'
             ]);
 
-            $result = $dynamoReport->update($id, $validated);
+            $updateData = $validated;
+
+            // If new image file is uploaded, upload to S3
+            if ($request->hasFile('image')) {
+                // Get current report to delete old image
+                $currentReport = $dynamoReport->find($id);
+                if ($currentReport && !empty($currentReport['image_url'])) {
+                    $this->s3Service->delete($currentReport['image_url']);
+                }
+                $updateData['image_url'] = $this->s3Service->upload($request->file('image'), 'reports') ?? '';
+            }
+
+            $result = $dynamoReport->update($id, $updateData);
 
             if (!$result['success']) {
                 return response()->json([

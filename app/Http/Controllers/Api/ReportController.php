@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Report;
+use App\Services\S3Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,13 @@ use Illuminate\Validation\ValidationException;
 
 class ReportController extends Controller
 {
+    protected S3Service $s3Service;
+
+    public function __construct(S3Service $s3Service)
+    {
+        $this->s3Service = $s3Service;
+    }
+
     /**
      * Store a new report.
      */
@@ -22,8 +30,16 @@ class ReportController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string|max:2000',
                 'location' => 'required|string|max:500',
-                'image_url' => 'nullable|url|max:500'
+                'image_url' => 'nullable|url|max:500',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
             ]);
+
+            $imageUrl = $validated['image_url'] ?? null;
+
+            // If image file is uploaded, upload to S3
+            if ($request->hasFile('image')) {
+                $imageUrl = $this->s3Service->upload($request->file('image'), 'reports');
+            }
 
             $report = Report::create([
                 'user_id' => Auth::id(),
@@ -31,7 +47,7 @@ class ReportController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'location' => $validated['location'],
-                'image_url' => $validated['image_url'] ?? null,
+                'image_url' => $imageUrl,
             ]);
 
             $report->load('user');
@@ -152,10 +168,22 @@ class ReportController extends Controller
                 'description' => 'sometimes|string|max:2000',
                 'location' => 'sometimes|string|max:500',
                 'image_url' => 'nullable|url|max:500',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'status' => 'sometimes|in:open,in_progress,resolved'
             ]);
 
-            $report->update($validated);
+            $updateData = $validated;
+
+            // If new image file is uploaded, upload to S3
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($report->image_url) {
+                    $this->s3Service->delete($report->image_url);
+                }
+                $updateData['image_url'] = $this->s3Service->upload($request->file('image'), 'reports');
+            }
+
+            $report->update($updateData);
             $report->load('user');
 
             return response()->json([
